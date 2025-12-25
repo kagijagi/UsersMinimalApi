@@ -11,9 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Load JWT settings from configuration
 var jwtSection = builder.Configuration.GetRequiredSection("Jwt");
-var issuer = jwtSection.GetValue<string>("Issuer");
-var audience = jwtSection.GetValue<string>("Audience");
-var key = jwtSection.GetValue<string>("Key");
+    var issuer = jwtSection.GetValue<string>("Issuer");
+    var audience = jwtSection.GetValue<string>("Audience");
+    var key = jwtSection.GetValue<string>("Key");
 
 // Configure rate limiting
 builder.Services.AddRateLimiter(options =>
@@ -45,20 +45,21 @@ builder.Services.AddRateLimiter(options =>
 
 // Configure JWT authentication
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // Use JWT Bearer authentication
     .AddJwtBearer(options =>
     {
+        // Configure token validation parameters
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
+            ValidateIssuer = true, // Validate the issuer
+            ValidateAudience = true, // Validate the audience
+            ValidateLifetime = true, // Validate token expiration
+            ValidateIssuerSigningKey = true, // Validate the signing key
 
-            ValidIssuer = issuer,
-            ValidAudience = audience,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(key))
+            ValidIssuer = issuer, // Token issuer
+            ValidAudience = audience, // Token audience
+            IssuerSigningKey = new SymmetricSecurityKey( // Signing key
+                Encoding.UTF8.GetBytes(key)) // Secret key
         };
     })
 ;
@@ -79,8 +80,9 @@ builder.Services.AddSingleton(new JwtTokenService(
 var app = builder.Build();
 
 // Generate and print a test JWT token
-var jwt = app.Services.GetRequiredService<JwtTokenService>();
+var jwt = app.Services.GetRequiredService<JwtTokenService>(); // Get JwtTokenService instance
 Console.WriteLine("TEST TOKEN:");
+// Generate a JWT token for user "Nikolai" with role "admin"
 Console.WriteLine(jwt.GenerateJwtToken("Nikolai", "admin"));
 
 // Use exception handler middleware
@@ -195,7 +197,7 @@ app.MapPost("/users", (User newUser) =>
     {
         return Results.Problem($"Unexpected error: {ex.Message}");
     }
-}).RequireAuthorization();
+}).RequireAuthorization(); // Require authorization for creating users
 
 // PUT update existing user with error handling
 app.MapPut("/users/{id:int}", (int id, User updatedUser) =>
@@ -227,7 +229,7 @@ app.MapPut("/users/{id:int}", (int id, User updatedUser) =>
     {
         return Results.Problem($"Unexpected error: {ex.Message}");
     }
-}).RequireAuthorization();
+}).RequireAuthorization(); // Require authorization for updating users
 
 // DELETE user by Id
 app.MapDelete("/users/{id:int}", (int id) =>
@@ -247,12 +249,12 @@ app.MapDelete("/users/{id:int}", (int id) =>
     {
         return Results.Problem($"Unexpected error: {ex.Message}");
     }
-}).RequireAuthorization();
+}).RequireAuthorization(); // Require authorization for deleting users
 
 // GET metrics
 app.MapGet("/metrics", (IRequestCounterService counterService) =>
 {
     return Results.Ok(counterService.GetMetrics());
-}).RequireAuthorization();
+}).RequireAuthorization(); // Require authorization for metrics
 
 app.Run();

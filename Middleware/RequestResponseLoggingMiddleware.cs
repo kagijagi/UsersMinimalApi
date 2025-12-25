@@ -63,19 +63,23 @@ public class RequestResponseLoggingMiddleware
     // Helper method to write logs to a file
     private async Task WriteToFileAsync(string message, LogType type)
     {
-        var today = DateTime.Now.ToString("yyyy-MM-dd");
-        var root = Directory.GetCurrentDirectory();
-        var folder = Path.Combine(root, "Logs");
+        var today = DateTime.Now.ToString("yyyy-MM-dd"); // Current date
+        var root = Directory.GetCurrentDirectory(); // Application root directory
+        var folder = Path.Combine(root, "Logs"); // Logs folder
 
+        // Create Logs folder if it doesn't exist
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
 
+        // Determine file name based on log type
         var fileName = type == LogType.Error
             ? $"logs_ERROR_{today}.txt"
             : $"logs_HTTP_{today}.txt";
 
+        // Combine folder and file name to get full path
         var filePath = Path.Combine(folder, fileName);
 
+        // Append the log message to the file
         await File.AppendAllTextAsync(filePath, message + Environment.NewLine, Encoding.UTF8);
     }
 }

@@ -1,4 +1,4 @@
-//
+// Middleware to count HTTP requests per route
 public class RequestCountingMiddleware
 {
     // Dependencies
