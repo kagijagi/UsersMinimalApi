@@ -1,0 +1,174 @@
+@host = http://localhost:5086
+
+###
+### GET ROUTES
+###
+
+### Get Root
+GET {{host}}/
+Accept: application/json
+
+### Get all users
+GET {{host}}/users
+Accept: application/json
+
+### Get all users filtered by search term
+GET {{host}}/users?search=john
+Accept: application/json
+
+### Get all users filtered by isCustomer
+GET {{host}}/users?isCustomer=true
+Accept: application/json
+
+### Get all users filtered by both search and isCustomer
+GET {{host}}/users?search=doe&isCustomer=true
+Accept: application/json
+
+### Get user by Id (existing)
+GET {{host}}/users/1
+Accept: application/json
+
+### Get user by Id (NOT FOUND - 404)
+GET {{host}}/users/9999
+Accept: application/json
+
+### Get user by negative Id (BAD REQUEST - 400)
+GET {{host}}/users/-2
+Accept: application/json
+
+###
+### POST ROUTES
+###
+
+### Create a new user (valid, no token - UNAUTHORIZED - 401)
+POST {{host}}/users
+Content-Type: application/json
+
+{
+  "id": 10,
+  "firstName": "Aleksandr",
+  "lastName": "Dmitriev",
+  "age": 7,
+  "isCustomer": true
+}
+
+### Create a new user (valid, token OK)
+POST {{host}}/users
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  "id": 10,
+  "firstName": "Aleksandr",
+  "lastName": "Dmitriev",
+  "age": 7,
+  "isCustomer": true
+}
+
+### Create a user with an existing ID (CONFLICT - 409)
+POST {{host}}/users
+Content-Type: application/json
+
+{
+  "id": 1,
+  "firstName": "Duplicate",
+  "lastName": "User",
+  "age": 20,
+  "isCustomer": false
+}
+
+### Create a user with invalid data (BAD REQUEST - 400)
+POST {{host}}/users
+Content-Type: application/json
+
+{
+  "id": 5,
+  "firstName": "Invalid",
+  "lastName": "User",
+  "age": 0,
+  "isCustomer": false
+}
+
+###
+### PUT ROUTES
+###
+
+### Update an existing user (valid)
+PUT {{host}}/users/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "firstName": "Updated",
+  "lastName": "User",
+  "age": 45,
+  "isCustomer": false
+}
+
+### Update a non-existing user (NOT FOUND - 404)
+PUT {{host}}/users/9999
+Content-Type: application/json
+
+{
+  "id": 9999,
+  "firstName": "Ghost",
+  "lastName": "User",
+  "age": 50,
+  "isCustomer": true
+}
+
+### Update a user with invalid data (BAD REQUEST - 400)
+PUT {{host}}/users/3
+Content-Type: application/json
+
+{
+  "id": 3,
+  "firstName": "Invalid",
+  "lastName": "User",
+  "age": -2,
+  "isCustomer": true
+}
+
+### Update an existing user but with mismatched ID in body (still allowed because API overwrites ID)
+PUT {{host}}/users/1
+Content-Type: application/json
+
+{
+  "id": 999,
+  "firstName": "Mismatch",
+  "lastName": "ID",
+  "age": 33,
+  "isCustomer": true
+}
+
+###
+### DELETE ROUTES
+###
+
+### Delete an existing user (valid)
+DELETE {{host}}/users/2
+Accept: application/json
+
+### Delete a non-existing user (NOT FOUND - 404)
+DELETE {{host}}/users/9999
+Accept: application/json
+
+### Delete a user with invalid Id (BAD REQUEST - 400)
+DELETE {{host}}/users/-10
+Accept: application/json
+
+###
+### METRICS ROUTE
+###
+
+### Check request counts
+GET {{host}}/metrics
+Accept: application/json
+Authorization: Bearer {token}
+
+###
+### ERROR TEST ROUTE
+###
+
+GET {{host}}/boom
+Accept: application/json
